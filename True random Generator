@@ -1,0 +1,96 @@
+#include<iostream>
+#include<windows.h> 
+#include<ctime>
+#include<string>
+#include <stdlib.h>
+#include<fstream>
+#include<ostream>
+using namespace std;
+const int keylength = 64;
+const int length = 1000;
+POINT p[length];
+POINT selectPoint[keylength];
+int a[length];
+int r1[length];
+int selecta[keylength];
+int firstKey[keylength];
+ofstream outFile("RandTxt", ios::binary);
+int RndNum(int rang)
+{
+	if (rang < 1)
+		rang = 1;
+	__int64 cnt;
+	_asm
+	{
+		rdtsc //得到cpu内部时钟的值，MSR 的高 32 位加载到 EDX 寄存器，低 32 位加载到 EAX 寄存器
+		mov DWORD PTR cnt, EAX //将低32位存到cnt的低32位(低4字节）
+		mov DWORD PTR(cnt + 4), EDX//将高32位存到cnt的高32位(高4字节）
+	}
+	int r2 = cnt % rang;
+	return(r2);
+}
+void  produceseed()
+{
+	int sum0 = 0;
+	int sum1 = 0;
+	for (int i = 0; i < length; i++)
+	{
+		a[i] = RndNum(2);
+	}
+	srand((unsigned)time(0));
+	for (int i = 0; i < length; i++)
+	{
+		r1[i] = rand() % length;
+	}
+	for (int i = 0; i < keylength; i++)
+	{
+		selectPoint[i] = p[r1[rand() % length]];//伪随机加伪随机进行随机抽样
+	}
+	srand((unsigned)time(0));
+	for (int i = 0; i < keylength; i++)
+	{
+		selecta[i] = a[r1[rand() % length]];//伪随机加伪随机进行随机抽样
+	}
+	//初始的种子
+	for (int i = 0; i < keylength; i++)
+	{
+		if ((selectPoint[i].x + selectPoint[i].y + selecta[keylength - 1 - i]) % 2 == 0)
+		{
+			firstKey[i] = 0;
+			sum0++;
+		}
+		else
+		{
+			firstKey[i] = 1;
+			sum1++;
+		}
+	}
+	//outFile << "#";
+	for (int i = 0; i < 64; i++)
+	{
+		outFile << firstKey[i];//伪随机加伪随机进行随机抽样
+	}
+	//outFile << " " << sum0 << " " << sum1;
+	//outFile << endl;
+	//outFile << endl;
+}
+int main()
+{
+	srand((unsigned)time(0));
+	int r[length];
+	for (int i = 0; i < length; i++)
+	{
+		r[i] = rand() % length;
+	}
+	for (int i = 0; i < length; i++)
+	{
+		GetCursorPos(&(p[i]));//获取鼠标坐标
+		cout << p[i].x << " " << p[i].y << endl;
+		Sleep(r[i] / 10);
+	}
+	for (int i = 0; i < 3; i++)
+	{
+		produceseed();
+	}
+	system("pause");
+}
